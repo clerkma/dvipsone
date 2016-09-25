@@ -151,7 +151,6 @@ typedef struct
 #define SUBDIRSEARCH  /* 1994/Aug/18 provide for sub-directory search */
 
 #define TPIC      /* insert code for dealing with TPIC \specials */
-
 #define TIFF      /* insert code for dealing with TIFF \specials */
 
 #define ALLOWSCALE    /* allow scaling of output DVI coordinates */
@@ -216,6 +215,7 @@ extern int ResidentFont(char * FileName);
 extern int FindFileName(char * fontname, char * filename);
 extern int MarkUnusedFonts(void);
 extern int GetSubstitutes(void);
+
 /* in dvipslog.c */
 extern int scanlogfile(FILE * fp_in);
 extern void resetpagerangehit(int flag);
@@ -230,9 +230,11 @@ extern int readtfm(char * font, FILE * fp_tfm, long widths[]);
 extern int readafm(char * font, FILE * fp_tfm, long widths[]);
 extern int readpfm(char * font, FILE * fp_tfm, long widths[]);
 extern int NamesFromPFM (FILE * input, char * FaceName, int nface, char * FontName, int nfont, char * FileName);
+
 /* in dvianal.c */
 extern int scan_dvi_file(FILE * output, FILE * input, int lastflag);
 extern long goto_post(FILE * input);
+
 /* in dvispeci.c */
 extern FILE * findepsfile(char * name, char * ext, int warnflag, int readflag);
 extern int scan_special(FILE * input, char * buff, int nmax);
@@ -246,6 +248,7 @@ extern int doColorPop(int pageno);
 extern int doColorPush(int pageno);
 extern void doColorSet(FILE * output, int popflag);
 extern double decodeunits(char * units);
+
 /* in dvipsone.c */
 extern int readcommands(char *filename);
 extern void errcount(int flag);
@@ -293,7 +296,6 @@ void lcivilize(char * date);
 void perrormod(char * s);
 FILE * open_font(char * font, int flag);
 FILE * open_pfm(char * font);
-int LoadATMREG (void);
 
 ////////////////////////////////////////////////////////////////////
 

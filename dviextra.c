@@ -785,7 +785,7 @@ static void show_font_table (void)
 /* New common routine 1992/Nov/28 */
 /* does not use backslash if beginning is blank or already ends on : \ or / */
 
-void make_file_name (char filepath[], char *fontname)
+void make_file_name (char *filepath, char *fontname)
 {
   char *s;
 
@@ -3101,12 +3101,6 @@ int find_font_PFB_aux (FILE *input, char *FontName, int nlen)
 /*        buffer[k] = '\0'; */
         *s = '\0';
 /*        strcpy (FontName, buffer); */
-#ifdef DEBUG
-        if (traceflag) {
-          sprintf(logline, "Found /FontName %s in %s\n", FontName, FileName);
-          showline(logline, 0);
-        }
-#endif
         return 1;   /* success */
       }
       else return 0;    /* failed, EOF in FontName or name too long */
@@ -3128,12 +3122,6 @@ int find_font_PFB (char *FileName, char *FontName, int nlen) /* 1993/Sep/30 */
 
   if ((input = open_font(FileName, 0)) == NULL)
   {
-#ifdef DEBUG
-    if (traceflag) {
-      sprintf(logline, "Unable to find font file for %s\n", FileName);  /* debug ? */
-      showline(logline, 0);
-    }
-#endif
     return 0;
   }
 
@@ -3165,13 +3153,6 @@ int find_font_PFM (char *FileName, char *FontName, int nlen) /* 1997/June/1 */
 
   if ((input = open_pfm(FileName)) == NULL)
   {
-#ifdef DEBUG
-    if (traceflag)
-    {
-      sprintf(logline, "Unable to find font file for %s\n", FileName);  /* debug ? */
-      showline(logline, 0);
-    }
-#endif
     return 0;
   }
 
@@ -5746,14 +5727,6 @@ int FindMMBaseFile (int k)
   else
     *FontName = '\0';
 
-#ifdef DEBUG
-  if (traceflag)
-  {
-    sprintf(logline, "Trying to find MM base font PS name for %s\n", FontName);
-    showline(logline, 0);
-  }
-#endif
-
   if ((s = strchr(FontName, '_')) != NULL && s > FontName)
   {
     if (traceflag)
@@ -5903,13 +5876,7 @@ int AddMMBase (int m)
     else
       *psbasename = '\0';
 /*  old way check whether matches on first five characters of font file name */
-#ifdef DEBUG
-    if (traceflag)
-    {
-      sprintf(logline, "COMPARE %s and %s\n", psbasename, psfontname);
-      showline(logline, 0);
-    }
-#endif
+
     if (bMMShortCut)
     {
       if (fontname[k] != NULL && fontname[m] != NULL &&
@@ -5919,13 +5886,6 @@ int AddMMBase (int m)
     else if (strcmp(psbasename, psfontname) != 0)
       continue;
 
-#ifdef DEBUG
-    if (traceflag)
-    {
-      sprintf(logline, "Already installed MM base font %s %d\n", psbasename, k);
-      showline(logline, 0);
-    }
-#endif
     if (fontchar[k] == NULL)
       setupfontchar(k);
 
@@ -5936,15 +5896,7 @@ int AddMMBase (int m)
         basewantchrs[i] = 1;
 
     return k;
-  }   
-
-#ifdef DEBUG
-  if (traceflag)
-  {
-    sprintf(logline, "Need to construct new MM base entry %s\n", psfontname);
-    showline(logline, 0);
   }
-#endif
 
 /*  Get here only if MM base font not found, have to add a new MM base font */
 /*  We construct MM base font file name from stub PSS file name */
@@ -5963,14 +5915,6 @@ int AddMMBase (int m)
   }
   else
     fontname[fnext] = NULL;
-
-#ifdef DEBUG
-  if (traceflag)
-  {
-    sprintf(logline, "New base font with PS FontName %s\n", psfontname);
-    showline(logline, 0);
-  }
-#endif
 
   if (subfontname[fnext] != NULL)
     free(subfontname[fnext]);
@@ -6102,14 +6046,6 @@ int AddMMFontName (FILE *input, int k, int pssflag, char *FileName, int nlen)
         free(subfontname[k]);
 
       subfontname[k] = zstrdup(line);
-
-#ifdef DEBUG
-      if (traceflag)
-      {
-        sprintf(logline, "MM PS FontName %s\n", line);
-        showline(logline, 0);
-      }
-#endif
 
       return 0;
     }
@@ -6707,14 +6643,6 @@ void preextract (void)
 //        strcpy (subfontnamek, subfontname + k * MAXTEXNAME);
         if (subfontname[k] != NULL) strcpy(subfontnamek, subfontname[k]);
         else *subfontnamek = '\0';
-#ifdef DEBUG
-        if (traceflag)
-        {
-          sprintf(logline, "%d %s %s %d\n", k,  fontnamek, subfontnamek,
-            fontproper[k]);   /* debugging */
-          showline(logline, 0);
-        }
-#endif
 /*        WARNING: FindFontName writes back into second argument ! */
 /*        FindFontName(fontname[k], subfontname[k]);*//* 1993/Sep/30 */
 //        FindFontName(fontnamek, subfontnamek, MAXFONTNAME); /* 1994/Feb/2 */
@@ -6828,14 +6756,6 @@ void dofont (FILE *fp_out, int f, int fn)
 /*      if (strcmp(fontname[f], subfontname[f]) == 0) {  */
 /*      if this font already used earlier at other size */
       n = fontsubflag[f];
-#ifdef DEBUG
-      sprintf(logline, "%d %s (%d)", f, fname, n); /* debugging */
-      showline(logline, 0);
-//      sprintf(logline, "%s", (subfontname + f * MAXFONTNAME));
-      sprintf(logline, "%s", subfontname[f]);
-      showline(logline, 0);
-      showline("\n", 0);
-#endif
       if ((fontproper[n] & C_RESIDENT) != 0) { /* what ? */
         if ((fontproper[n] & C_REMAPIT) == 0) { /* ? */
 /*          strcpy(fname, fontname[n]); */    /* 1992/July/4 */
@@ -6946,12 +6866,6 @@ void dofont (FILE *fp_out, int f, int fn)
 
 //        strcat(fname, subfontname + f * MAXFONTNAME);
         if (subfontname[f] != NULL) strcat(fname, subfontname[f]);
-#ifdef DEBUG
-        if (traceflag) {
-          sprintf(logline, "subfontname (%d): %s ", f, fname);
-          showline(logline, 0);
-        }
-#endif
         if (traceflag) {      /* debugging */
 //          if (logfileflag) showproper(logfile, fontproper[f]);
           showproper(logline, fontproper[f]);
@@ -6982,10 +6896,6 @@ void dofont (FILE *fp_out, int f, int fn)
         bShortFont ? f : fn, bUseInternal ? fn : f); 
       PSputs(logline, fp_out);
 /*      fprintf(fp_out, "/f%d{fn%d sf}def\n", fn, fn);*/ /* 1994/June/7 */
-#ifdef DEBUG
-/*      printf("fontname %s subfontname %s fontproper %0x\n",
-        fontname[f], subfontname[f], property); */
-#endif
     }
 /*    else printf("Font %d noted as C_UNUSED\n", f); */ /* 95/Feb/1 */
   }
@@ -7751,13 +7661,6 @@ int ResidentFont (char *FileName)       /* 1994/Feb/10 */
   char *s, *t;
   int k;
 
-#ifdef DEBUG
-  if (traceflag)
-  {
-    sprintf(logline, "ResidentFont %s?\n", FileName); /* debugging 97/June/5 */
-    showline(logline, 0);
-  }
-#endif
 /*  extract just font file name - get rid of path */
 /*  if ((s = strrchr(FileName, '\\')) != NULL) s++;
   else if ((s = strrchr(FileName, '/')) != NULL) s++;
@@ -7768,12 +7671,7 @@ int ResidentFont (char *FileName)       /* 1994/Feb/10 */
   if ((t = strrchr(s, '.')) != NULL) *t ='\0';
   t = s + strlen(s) - 1;
   while (*t == '_') *t-- = '\0';          /* strip underscores */
-#ifdef DEBUG
-  if (traceflag) {
-    sprintf(logline, "Looking for font file: `%s'\n", s);/* debugging 97/June/5 */
-    showline(logline, 0);
-  }
-#endif
+
   for (k = 0; k < ksubst; k++) {
     if (fontsubprop[k] & C_RESIDENT) {
 /*      if (strcmp (s, fontsubfrom + k * MAXTEXNAME) == 0) */

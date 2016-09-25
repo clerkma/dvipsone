@@ -26,12 +26,8 @@
 
 #include "dvipsone.h"
 
-#include <io.h> /* for _access */
-                /* for _findfirst, _findnext, _findclose */
-
-/* #define DEBUGALIAS */
-
-/* #define DEBUGCOLORSTACK */
+#include <io.h> 
+/* for _access, _findfirst, _findnext, _findclose */
 
 COLORSPEC CurrColor;
 
@@ -163,14 +159,6 @@ void RestoreColorStack (int page)
     return;
   }
   colorindex = (int) (SavedStack[0].D + 0.5); /* depth of saved stack */
-#ifdef DEBUGCOLORSTACK
-  if (traceflag)
-  {
-    sprintf(logline, " RestoreColorStack from page-1 %d colorindex %d\n",
-              page, colorindex);
-    showline(logline, 0);
-  }
-#endif
   if (colorindex > 0 && colorindex < MAXCOLORSTACK) {
     for (k = 0; k < colorindex; k++) ColorStack[k] = SavedStack[k+1];
   }
@@ -199,14 +187,6 @@ void SaveColorStack (int page, int colorindex)
     showline(logline, 1);
 /*    free(lpColor[page]); */
   }
-#ifdef DEBUGCOLORSTACK
-  if (traceflag)
-  {
-    sprintf(logline, " SaveColorStack page %d colorindex %d\n",
-        page, colorindex);
-    showline(logline, 0);
-  }
-#endif
   if (colorindex == 0) return;    /* nothing to save ??? */
   SavedStack = (COLORSPEC *) malloc ((colorindex+1) * sizeof(COLORSPEC));
   ColorStacks[page] = SavedStack;
@@ -1644,13 +1624,6 @@ void alloccolorsave (int npages)
     showline(" ERROR: color save stacks allocation\n", 1);
     freecolorsave();
   }
-#ifdef DEBUGCOLORSTACK
-  if (traceflag)
-  {
-    sprintf(logline, "Allocating color save stack for %d pages\n", npages);
-    showline(logline, 0);
-  }
-#endif
   if (npages == 0) npages = 1;
   ColorStacks = (COLORSPEC **) malloc((npages+1) * sizeof(COLORSPEC *));
   if (ColorStacks == NULL) {
@@ -1667,9 +1640,6 @@ void freecolorsave (void)
   int k, npages = MaxColor;
   
   if (ColorStacks == NULL) return;
-#ifdef DEBUGCOLORSTACK
-  if (traceflag) showline("Freeing Saved Color Stacks\n", 0);
-#endif
   for (k = 0; k < npages; k++) {
     if (ColorStacks[k] != NULL) {
       free(ColorStacks[k]);
@@ -1681,41 +1651,6 @@ void freecolorsave (void)
     ColorStacks = NULL;
   }
 }
-
-#ifdef DEBUGCOLORSTACK
-void dumpcolorsave (void)    /* debugging only */
-{
-  int k, m, i, npages = MaxColor-1;
-  COLORSPEC *ColorSaved;
-
-  if (ColorStacks == NULL)
-  {
-    showline(" No saved color stacks to show\n", 1);
-    return;
-  }
-  sprintf(logline, " Saved color stacks for %d pages after prescan:\n", npages);
-  showline(logline, 1);
-/*  for (k = 0; k < npages; k++) { */
-  for (k = 1; k <= npages; k++) {
-    if (ColorStacks[k] != NULL) {
-      sprintf(logline, "For page %d:\n", k);
-      showline(logline, 1);
-      ColorSaved = ColorStacks[k];
-      m = (int) (ColorSaved[0].D + 0.5);
-      for (i = 1; i <= m; i++) {
-        sprintf(logline, "%d\t%g\t%g\t%g\t%g\n", i,
-             ColorSaved[i].A,  ColorSaved[i].B,
-             ColorSaved[i].C,  ColorSaved[i].D);
-        showline(logline, 1);
-      }
-    }
-    else {
-      sprintf(logline, " ERROR: ColorStack[%d] is NULL\n", k);
-      showline(logline, 1);
-    }
-  }
-}
-#endif
 
 void allocbackground (int npages)
 {
@@ -1967,9 +1902,6 @@ int scanlogfile (FILE *fp_in)
   if (bCarryColor != 0 && bColorUsed == 0)
     freecolorsave();      /* not needed in this case */
   if (traceflag) showline("End PreScan DVI file\n", 0);
-#ifdef DEBUGCOLORSTACK
-  if (traceflag) dumpcolorsave();
-#endif
   if (abortflag) return -1;
   return 0;
 }
@@ -2125,12 +2057,6 @@ static unsigned int map_hash (char *key)
   so no point in weighting the characters.  */
   while (*s != 0) n += *s++;
   n %= MAP_SIZE;
-#ifdef DEBUGALIAS
-  if (traceflag) {
-    sprintf(logline, "hash %u for %s\n", n, key);
-    showline(logline, 0);
-  }
-#endif
   return n;
 }
 
@@ -2142,43 +2068,10 @@ static char *map_lookup_str (map_type map, char *key)
   map_element_type *p;
   
   for (p = map[n]; p != NULL; p = p->next) {
-#ifdef DEBUGALIAS
-    if (traceflag) {
-      sprintf(logline, "Trying %s against %s\n", key, p->key);
-      showline(logline, 0);
-    }
-#endif
     if (strcmp (key, p->key) == 0) return p->value;
-#ifdef DEBUGALIAS
-    if (traceflag) {
-      sprintf(logline, "p->next %p\n", p->next);
-      showline(logline, 0);
-    }
-#endif
   }
-#ifdef DEBUGALIAS
-  if (traceflag) {
-    sprintf(logline, " failed to find %s\n", key);
-    showline(logline, 0);
-  }
-#endif
   return NULL;          /* failed to find it */
 }
-
-#ifdef DEBUGALIAS
-static void map_show (map_type map) /* debugging tool */
-{
-  map_element_type *p;
-  unsigned int n;
-  
-  for (n = 0; n < MAP_SIZE; n++) {
-    for (p = map[n]; p != NULL; p = p->next) {
-      sprintf(logline, "n %u key %s next %p\n", n, p->key, p->next);
-      showline(logline, 0);
-    }
-  }
-}
-#endif
 
 /*  Look up KEY in MAP; if it's not found, remove any suffix from KEY and
   try again.  Then paste key back into answer ... */
@@ -2288,12 +2181,6 @@ static void map_file_parse (map_type map, char *map_filename)
   }
 /*  xfclose (f, map_filename); */
   fclose (f);
-#ifdef DEBUGALIAS
-  if (traceflag) {
-    sprintf(logline, "%u entries\n", entries);
-    showline(logline, 0);
-  }
-#endif
 }
 
 /* Look for the file `texfonts.map' in each of the directories in
@@ -2310,9 +2197,7 @@ static void map_file_parse (map_type map, char *map_filename)
 
   map = (map_type) xcalloc (MAP_SIZE, sizeof (map_element_type *));
   map_file_parse (map, filename);
-#ifdef DEBUG
-  if (traceflag) map_show(map);
-#endif
+
   return map;
 } */
 
@@ -2364,27 +2249,15 @@ map_type map_create (char *texfonts)      /* 97/May/10 */
 {
   char pathname[_MAX_PATH];
   map_type map;
-      
-#ifdef DEBUGALIAS
-  if (traceflag) showline("Creating alias table\n", 0);
-#endif
+
 /*  oursearchenv ("texfonts.map", envvar, pathname); */
   oursearchenv ("texfonts.map", texfonts, pathname);
   if (*pathname == '\0') {
-#ifdef DEBUGALIAS
-    if (traceflag) {
-      sprintf(logline, "Could not find %s in\n", "texfonts.map", texfonts);
-      showline(logline, 0);
-    }
-#endif
     return NULL;
   }
 
   map = (map_type) xcalloc (MAP_SIZE, sizeof(map_element_type *));
   map_file_parse (map, pathname);
-#ifdef DEBUGALIAS
-  if (traceflag) map_show(map);
-#endif
   return map;
 }
 
@@ -2663,9 +2536,6 @@ int searchalongpath (char *filename, char *pathlist, char *pathname, int current
   char *s, *t, *u, *send;
   int c, n;
   int recurse;
-#ifdef DEBUGSEARCHPATH
-  int code;
-#endif
   
   if (current > 0) {  /*  Try for exact match in current directory first ? */
     strcpy(pathname, filename);
@@ -2676,14 +2546,6 @@ int searchalongpath (char *filename, char *pathlist, char *pathname, int current
       }
       return 0;             /* success */
     }
-#ifdef DEBUGSEARCHPATH
-    if (traceflag) {              /* debugging */
-      code = _access(pathname, ACCESSCODE);
-      sprintf(logline, " File %s Access %d\n",
-        pathname, _access(pathname, ACCESSCODE));
-      showline(logline, 0);
-    }
-#endif
   }
 
 /*  Now step through paths in pathlist */

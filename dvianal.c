@@ -2017,20 +2017,6 @@ int scan_dvi_file (FILE *output, FILE *input, int lastflag)
   int c, fs;
   long filptr;
 
-#ifdef DEBUGGING
-  if (output == NULL)
-  {
-    sprintf(logline, " NULL %s file\n", "output"); /* debug */
-    showline(logline, 1);
-  }
-
-  if (input == NULL)
-  {
-    sprintf(logline, " NULL %s file\n", "input"); /* debug */
-    showline(logline, 1);
-  }
-#endif
-
   if (countzeroflag)
     resetpagerangehit (0);
 

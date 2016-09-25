@@ -2574,7 +2574,7 @@ int currentnode;  // code of node currently at
 int nextnode;   // code of next node to be used
 int codelength;   // how many bits needed for code at this stage 9, 10, 11, 12
 
-void DeAllocStringsOut (void) // called from dvibody() in dvipsone.c
+void DeAllocStringsOut (void) // called from dvipsone_body() in dvipsone.c
 {
   if (node != NULL) {
     free(node);

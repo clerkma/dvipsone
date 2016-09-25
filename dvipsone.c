@@ -4520,7 +4520,7 @@ double roundtime (long numer, long denom)
   return ((double) ((long) (x * 1000.0 + 0.5))) / 1000.0;
 }
 
-char * get_path(void)
+char * get_path (void)
 {
   static char s[1024];
   HMODULE h = GetModuleHandle(NULL);
@@ -4529,7 +4529,7 @@ char * get_path(void)
 }
 /* top level control separated out for jumpout */
 
-int dvibody (int argc, char *argv[])
+int dvipsone_body (int argc, char *argv[])
 {
   int m, k, firstarg;
   char *s, *t, *filename;
@@ -5371,12 +5371,14 @@ int uexit (int code)
 #ifndef _WINDOWS
   fflush(stdout);
 #endif
+
   if (jumpused)
   {
     sprintf(logline, "ERROR: Jump Buffer used %d\n", jumpused);
     showline(logline, 1);
     exit(1);
   }
+
   jumpused++;
   longjmp(jumpbuffer, code + 1);    // 1999/Nov/7
 }
@@ -5386,13 +5388,14 @@ int main (int argc, char *argv[]) /* main program entry point */
   int flag = 0, ret;
 
   errout = stdout;
-//  now creates jump buffer for non-local goto's  99/Nov/7
+
+  //  now creates jump buffer for non-local goto's  99/Nov/7
   jumpused = 0;
   ret = setjmp(jumpbuffer);
 
   if (ret == 0) // get here when setting up jumpbuffer
   {
-    flag = dvibody(argc, argv);
+    flag = dvipsone_body(argc, argv);
 
     if (traceflag)
     {
@@ -5411,6 +5414,7 @@ int main (int argc, char *argv[]) /* main program entry point */
     }
     freememory();     // already done after each file
   }
+
 #ifdef USELOGFILE
   if (logfile != NULL)
   {
@@ -5422,7 +5426,7 @@ int main (int argc, char *argv[]) /* main program entry point */
   if (flag == 0)
     return 0;
   else
-    exit (flag);
+    exit(flag);
 }
 
 //////////////////////////////////////////////////////////////////////////////
